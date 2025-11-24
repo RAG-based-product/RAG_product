@@ -1,0 +1,31 @@
+@startuml name Component Diagram
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam defaultTextAlignment center
+
+actor "User" as User
+rectangle "Chatbot (TG/Web/UI)" as Bot
+
+package "RAG System" {
+
+    component "Query analyser\n(Language detection,\nExtraction du code,\nKeywords, erreurs)" as QueryAnalyzer
+
+    component "WebSearchEngine\n(Google/Yandex via Tivoli)\nsite:stackoverflow.com <query>" as SearchEngine
+
+    component "StackOverflow API\n(Get Question + Answers)" as SO_API
+
+    component "Reranking &\nContext Builder\n(Filtrage, top-k)" as ContextBuilder
+
+    component "LLM\n(GPT-5 / Mistral / Llama)" as LLM
+
+}
+
+User --> Bot
+Bot --> QueryAnalyzer
+QueryAnalyzer --> SearchEngine
+SearchEngine --> SO_API
+SO_API --> ContextBuilder
+ContextBuilder --> LLM
+LLM --> Bot
+Bot --> User
+

@@ -1,0 +1,51 @@
+@startuml name Class Diagram
+
+skinparam shadowing false
+
+class QueryAnalyzer {
+    +detectLanguage(text)
+    +extractCode(text)
+    +extractKeywords(text)
+    +extractErrorTypes(text)
+    +buildSearchQuery()
+}
+
+class WebSearchEngine {
+    +search(query)
+    +parseResults()
+}
+
+class StackOverflowAPI {
+    +fetchQuestion(id)
+    +fetchAnswers(id)
+}
+
+class Reranker {
+    +rerank(documents, query)
+    +selectTopK(k)
+}
+
+class ContextBuilder {
+    +normalizeText()
+    +mergeSources()
+    +buildPrompt(question, documents)
+}
+
+class LLM {
+    +generate(prompt)
+}
+
+class ChatbotUI {
+    +receiveUserInput()
+    +sendAnswer()
+    +renderCode()
+    +renderSources()
+}
+
+QueryAnalyzer --> WebSearchEngine
+WebSearchEngine --> StackOverflowAPI
+StackOverflowAPI --> Reranker
+Reranker --> ContextBuilder
+ContextBuilder --> LLM
+LLM --> ChatbotUI
+
