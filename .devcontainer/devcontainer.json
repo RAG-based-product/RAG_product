@@ -1,0 +1,17 @@
+{
+  "name": "Python Dev Container",
+  "build": { "dockerfile": "Dockerfile" },
+  "remoteUser": "root",
+  "customizations": {
+      "vscode": {
+          "extensions": [
+              "ms-python.python",
+              "ms-python.vscode-pylance",
+              "eamodio.gitlens"
+          ]
+      }
+  },
+  "postStartCommand": "export PYTHONPATH=.",
+  "workspaceFolder": "/workspace",
+  "workspaceMount":  "source=${localWorkspaceFolder},target=/workspace,type=bind"
+}
