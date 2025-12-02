@@ -1,4 +1,4 @@
-from langchain_mistralai import ChatMistralAI
+from langchain_mistralai.chat_models import ChatMistralAI
 
 from typing import List, Dict
 # from utils.config import Config

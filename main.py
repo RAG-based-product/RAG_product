@@ -1,4 +1,3 @@
-import asyncio
 from tg_bot.bot_core import MultiAgentBot
 # from utils.config import Config
 # from core.dependencies import setup_dependencies
