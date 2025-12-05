@@ -1,72 +1,5 @@
 import requests
-import time
-from typing import List, Dict, Any
-
-class StackOverflowSimilarQuestions:
-    def __init__(self, api_key: str = None):
-        self.base_url = "https://api.stackexchange.com/2.3"
-        self.api_key = api_key
-        
-    def get_similar_questions(self, 
-                            title: str = None,
-                            tags: List[str] = None,
-                            n_results: int = 5) -> List[Dict[str, Any]]:
-        """
-        Получение похожих вопросов по заголовку и тегам
-        """
-        params = {
-            'order': 'desc',
-            'sort': 'relevance',
-            'site': 'stackoverflow',
-            'filter': '!6WPIomnMOOD*e',
-            'pagesize': n_results
-        }
-        
-        if title:
-            # Эндпоинт для поиска по заголовку
-            url = f"{self.base_url}/search"
-            params['title'] = title
-            params['intitle'] = title  # Более строгий поиск в заголовке
-            
-        elif tags:
-            # Эндпоинт для вопросов по тегам
-            url = f"{self.base.url}/questions"
-            params['tagged'] = ';'.join(tags)
-        else:
-            raise ValueError("Необходимо указать title или tags")
-            
-        if self.api_key:
-            params['key'] = self.api_key
-            
-        response = requests.get(url, params=params)
-        
-        if response.status_code == 200:
-            data = response.json()
-            # return self._format_questions(data.get('items', []))
-            return data.get('items', [])
-        else:
-            print(f"Ошибка API: {response.status_code}")
-            return []
-    
-    def _format_questions(self, questions: List[Dict]) -> List[Dict]:
-        """Форматирование результатов"""
-        formatted = []
-        for q in questions:
-            formatted.append({
-                'question_id': q['question_id'],
-                'title': q['title'],
-                'link': q['link'],
-                'score': q['score'],
-                'answer_count': q['answer_count'],
-                'is_answered': q['is_answered'],
-                'view_count': q['view_count'],
-                'tags': q['tags'],
-                'creation_date': q['creation_date']
-            })
-        return formatted
-
-
-import requests
+# import time
 from typing import List, Dict, Any, Optional
 
 class StackOverflowAnswersAPI:
@@ -78,10 +11,11 @@ class StackOverflowAnswersAPI:
     def get_questions_with_answers(self,
                                  query: str,
                                  tags: List[str] = None,
-                                 min_score: int = 5,
+                                 min_score: int = 0,
                                  only_accepted: bool = True,
                                  has_accepted_answer: bool = True,
-                                 n_results: int = 10) -> List[Dict[str, Any]]:
+                                 n_results: int = 10,
+                                 additional_question_ids: List[int] = []) -> List[Dict[str, Any]]:
         """
         Получение вопросов с проверенными ответами
         """
@@ -106,22 +40,73 @@ class StackOverflowAnswersAPI:
             params['key'] = self.api_key
             
         response = self.session.get(url, params=params)
-        
+
+        # print(f"Response: {response.json()}")
         if response.status_code == 200:
-            data = response.json()
-            questions = data.get('items', [])
-            
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    questions = data
+                else:
+                    questions = data.get('items', [])
+            except Exception as e:
+                print(f"Ошибка при получении вопросов: {e} при ответе {response.json()}")
+                return []
             # Фильтрация по минимальному score
             filtered_questions = [
                 q for q in questions 
                 if q['score'] >= min_score
             ]
-            
+            # print('filtered_questions ', filtered_questions)
+            q_ids = [q['question_id'] for q in filtered_questions]
+            print('SO Answers API returns q_ids ', q_ids)
+
+            if additional_question_ids:
+                additional_questions = self._get_questions_by_ids(additional_question_ids)
+                additional_questions = [q for q in additional_questions 
+                                        if q['question_id'] not in q_ids]  # Убираем дубликаты 
+            filtered_questions.extend(additional_questions)
+            # print('filtered_questions ', filtered_questions)
+            # print('additional filtered_questions ', filtered_questions)
+            # print('_____________')
             return self._enrich_with_best_answers(filtered_questions, only_accepted)
         else:
             print(f"Ошибка API: {response.status_code}")
             return []
-    
+
+    def _get_questions_by_ids(self, additional_question_ids: List[int]) -> List[Dict[str, Any]]:
+        """
+        Получение вопросов по их идентификаторам
+        """
+        url_ids = [f"{self.base_url}/questions/{qid}" for qid in additional_question_ids]
+        # print('url_ids ', url_ids)
+        additional_questions = []
+        for url_id in url_ids:
+
+            response = self.session.get(
+                url_id, 
+                params={
+                    'order': 'desc', 
+                    'sort': 'activity', 
+                    'site': 'stackoverflow', 
+                    'filter': '!nNPvSNPI7A' # Фильтр с телами ответов
+                    }
+                    )
+            # print('response ', response) 
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    question = data.get('items', [])[0]
+                    # print('question ', question)
+                    additional_questions.append(question)
+                except Exception as e:
+                    print(f"Ошибка при получении вопроса по идентификатору {url_id}: {e}")
+                    continue
+            else:
+                print(f"Ошибка API: {response.status_code}")
+        return additional_questions
+
+
     def _enrich_with_best_answers(self, 
                                 questions: List[Dict], 
                                 only_accepted: bool) -> List[Dict]:
@@ -132,6 +117,7 @@ class StackOverflowAnswersAPI:
         
         for question in questions:
             # Получаем ответы для вопроса
+            # print('question ', question)
             answers = self._get_question_answers(question['question_id'])
             
             if not answers:
@@ -239,7 +225,8 @@ class StackOverflowAnswersAPI:
         
         return text
 
-if __name__ == "__main__":
+
+def test_get_questions_with_answers():
     # q = StackOverflowSimilarQuestions()
     # ans = q.get_similar_questions('What is difference between nn.Module and nn.Sequential')
     # print(ans)
@@ -249,9 +236,9 @@ if __name__ == "__main__":
 
     # Получение проверенных ответов
     verified_answers = so_api.get_questions_with_answers(
-        query="What is difference between nn.Module and nn.Sequential",
+        query="center argument must be a pair of numbers",
         # tags=["python", "json"],
-        min_score=5,
+        min_score=1,
         only_accepted=True,
         n_results=5
     )
@@ -268,3 +255,7 @@ if __name__ == "__main__":
         print(f"   📝 Ответ: {qa['best_answer']['body'][:]}...")
         print(f"   🔗 Ссылка: {qa['url']}")
         print()
+
+
+if __name__ == "__main__":
+    test_get_questions_with_answers()

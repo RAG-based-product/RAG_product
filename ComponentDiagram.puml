@@ -29,3 +29,4 @@ ContextBuilder --> LLM
 LLM --> Bot
 Bot --> User
 
+@enduml

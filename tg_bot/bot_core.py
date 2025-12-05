@@ -9,6 +9,7 @@ from telegram.ext import CommandHandler, filters, MessageHandler
 from tg_bot.handlers.message_handlers import MessageHandlers
 from tg_bot.handlers.start_handler import StartHandler
 from models.base_llm_client import BaseLLMClient
+from web_search.base_web_search_engine import BaseWebSearchEngine
 from models.prompts import get_prompt
 # from models.mistral_llm_client import MistralLLMClient
 from tg_bot.utils import get_application
@@ -19,11 +20,11 @@ from tg_bot.utils import get_application
 # client = Mistral(api_key=API_KEY)
 # model = "mistral-medium-2505"
 class MultiAgentBot:
-    def __init__(self, llm: BaseLLMClient | None):
+    def __init__(self, llm: BaseLLMClient | None, web_search_engine: BaseWebSearchEngine | None):
         # self.application = Application.builder().token(token).build()
         self.application = get_application()
         self.llm = llm
-        
+        self.web_search_engine = web_search_engine
         # Инициализируем все обработчики
         self.handlers = [
             MessageHandlers(self),
@@ -40,7 +41,7 @@ class MultiAgentBot:
     def process_user_message(self, update, context):
         user_id = str(update.effective_user.id)
         user_message = update.message.text
-        prompt = get_prompt(user_message)
+        prompt = get_prompt(user_message, self.web_search_engine)
         ans = self.llm.generate(messages=prompt)
 
         return ans

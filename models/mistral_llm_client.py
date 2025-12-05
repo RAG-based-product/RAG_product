@@ -6,10 +6,8 @@ from dotenv import load_dotenv
 import os
 
 from models.base_llm_client import BaseLLMClient
-
 class MistralLLMClient(BaseLLMClient):
     def __init__(self):
-
         self.API_KEY = None
         load_dotenv(".env")
         API_KEY = os.environ.get("mistral")
@@ -17,7 +15,7 @@ class MistralLLMClient(BaseLLMClient):
         if not API_KEY:
             raise ValueError("❌ MISTRAL_API_KEY not found!")
         else:
-            print("✅ API key loaded successfully!")
+            print("✅ MISTRAL_API_KEY loaded successfully!")
             self.API_KEY = API_KEY
     
     async def generate(self, messages: List[Dict], model: str = "mistral-small-latest", temperature: float = 0.7) -> str:
