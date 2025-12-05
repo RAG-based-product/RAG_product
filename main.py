@@ -16,7 +16,7 @@ def main():
     # Создаем и запускаем бота
     bot = MultiAgentBot(llm)
     
-    print("🤖 Мультиагентный бот запускается...")
+    print("Мультиагентный бот запускается...")
     bot.application.run_polling()
 
 if __name__ == "__main__":
