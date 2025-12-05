@@ -12,9 +12,9 @@ class TavilyWebSearchEngine(BaseWebSearchEngine):
         load_dotenv()
         TAVILY_API_TOKEN = os.environ.get("TAVILY_API_TOKEN")
         if not TAVILY_API_TOKEN:
-            raise ValueError("❌ TAVILY_API_TOKEN not found!")
+            raise ValueError("TAVILY_API_TOKEN not found!")
         else:
-            print("✅ TAVILY_API_TOKEN loaded successfully!")
+            print("TAVILY_API_TOKEN loaded successfully!")
             self.tavily_client = TavilyClient(api_key=TAVILY_API_TOKEN)
 
     def search(self, query, top_k=5, include_domains=["stackoverflow.com/questions"]):
