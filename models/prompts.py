@@ -1,7 +1,6 @@
 from rag.so_similar_questions import StackOverflowAnswersAPI
 
 def get_prompt(user_content):
-    # TODO:
     so_api = StackOverflowAnswersAPI()
 
     # Получение проверенных ответов
@@ -14,13 +13,13 @@ def get_prompt(user_content):
     )
     rag_add = ''
     for qa in verified_answers:
-        rag_add += (f"🎯 Вопрос: {qa['question_title']}. Тело вопроса:{qa['question_body']}.")
-        rag_add += (f"   👍 Рейтинг вопроса: {qa['question_score']}")
-        rag_add += (f"   ✅ Принятый ответ: {qa['best_answer']['is_accepted']}")
-        rag_add += (f"   ⭐ Рейтинг ответа: {qa['best_answer']['score']}")
-        rag_add += (f"   👤 Репутация автора: {qa['best_answer']['owner_reputation']}")
-        rag_add += (f"   📝 Ответ: {qa['best_answer']['body'][:]}...")
-        rag_add += (f"   🔗 Ссылка: {qa['url']}")
+        rag_add += (f"Вопрос: {qa['question_title']}. Тело вопроса:{qa['question_body']}.")
+        rag_add += (f"   Рейтинг вопроса: {qa['question_score']}")
+        rag_add += (f"   Принятый ответ: {qa['best_answer']['is_accepted']}")
+        rag_add += (f"   Рейтинг ответа: {qa['best_answer']['score']}")
+        rag_add += (f"   Репутация автора: {qa['best_answer']['owner_reputation']}")
+        rag_add += (f"   Ответ: {qa['best_answer']['body'][:]}...")
+        rag_add += (f"   Ссылка: {qa['url']}")
 
     message=[
             {

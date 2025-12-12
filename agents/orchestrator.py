@@ -33,4 +33,6 @@ class AgentOrchestrator:
         # todo
         # await self._save_to_memory(user_id, user_message, final_response)
         
+        # For now, just return the results dictionary as the final response
+        final_response = results
         return final_response
