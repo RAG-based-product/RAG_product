@@ -12,6 +12,19 @@ class MistralLLMClient(BaseLLMClient):
             raise ValueError("MISTRAL_API_KEY not found!")
         print("API key loaded successfully!")
 
+<<<<<<< HEAD
+        self.API_KEY = None
+        load_dotenv(".env")
+        API_KEY = os.environ.get("mistral")
+
+        if not API_KEY:
+            raise ValueError("MISTRAL_API_KEY not found!")
+        else:
+            print("API key loaded successfully!")
+            self.API_KEY = API_KEY
+    
+=======
+>>>>>>> main
     async def generate(self, messages: List[Dict], model: str = "mistral-small-latest", temperature: float = 0.7) -> str:
         try:
             llm = ChatMistralAI(
