@@ -1,15 +1,24 @@
-from rag.so_similar_questions import StackOverflowAnswersAPI
+from rag.so_answers import StackOverflowAnswersAPI
+from web_search.base_web_search_engine import BaseWebSearchEngine
 
+def get_prompt(user_content, web_search_engine: BaseWebSearchEngine):
+    # TODO: Поиск в интернете
+    web_results = web_search_engine.search(user_content)
+    print('web_results ', web_results)
+
+<<<<<<< HEAD
 def get_prompt(user_content):
+=======
+>>>>>>> web_search
     so_api = StackOverflowAnswersAPI()
-
     # Получение проверенных ответов
     verified_answers = so_api.get_questions_with_answers(
         query=user_content,
         # tags=["python", "json"],
         min_score=5,
         only_accepted=True,
-        n_results=5
+        n_results=5,
+        additional_question_ids=web_results
     )
     rag_add = ''
     for qa in verified_answers:

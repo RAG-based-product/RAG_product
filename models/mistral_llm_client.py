@@ -3,9 +3,9 @@ from typing import List, Dict
 from dotenv import load_dotenv
 import os
 from models.base_llm_client import BaseLLMClient
-
 class MistralLLMClient(BaseLLMClient):
     def __init__(self):
+<<<<<<< HEAD
         load_dotenv()
         self.API_KEY = os.getenv("MISTRAL_API_KEY")
         if not self.API_KEY:
@@ -13,6 +13,8 @@ class MistralLLMClient(BaseLLMClient):
         print("API key loaded successfully!")
 
 <<<<<<< HEAD
+=======
+>>>>>>> web_search
         self.API_KEY = None
         load_dotenv(".env")
         API_KEY = os.environ.get("mistral")
@@ -20,7 +22,11 @@ class MistralLLMClient(BaseLLMClient):
         if not API_KEY:
             raise ValueError("MISTRAL_API_KEY not found!")
         else:
+<<<<<<< HEAD
             print("API key loaded successfully!")
+=======
+            print("✅ MISTRAL_API_KEY loaded successfully!")
+>>>>>>> web_search
             self.API_KEY = API_KEY
     
 =======
