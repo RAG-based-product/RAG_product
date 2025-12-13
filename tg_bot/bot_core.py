@@ -1,63 +1,69 @@
-from typing import List, Literal, Optional, Dict, Any
-from pydantic import BaseModel
-from mistralai import Mistral
+# RAG_product/tg_bot/bot_core.py
 
+from typing import List, Optional
 import logging
-from telegram.ext import CommandHandler, filters, MessageHandler
+from telegram.ext import CommandHandler, filters, MessageHandler as TgMessageHandler
+from telegram.ext import ContextTypes, Application
+from telegram import Update
 
-# from handlers.handlers import echo, start
-from tg_bot.handlers.message_handlers import MessageHandler
-from tg_bot.handlers.start_handler import start_handler
+# Импорты ваших модулей
+from tg_bot.handlers.message_handlers import MessageHandler as BotMessageHandler
+from tg_bot.handlers.start_handler import start_handler 
 from models.base_llm_client import BaseLLMClient
 from web_search.base_web_search_engine import BaseWebSearchEngine
 from models.prompts import get_prompt
-# from models.mistral_llm_client import MistralLLMClient
 from tg_bot.utils import get_application
 
-# Load environment variables
+logger = logging.getLogger(__name__)
 
-
-# client = Mistral(api_key=API_KEY)
-# model = "mistral-medium-2505"
 class MultiAgentBot:
     def __init__(self, llm: BaseLLMClient | None, web_search_engine: BaseWebSearchEngine | None):
-        # self.application = Application.builder().token(token).build()
-        self.application = get_application()
+        
+        self.application: Application = get_application()
         self.llm = llm
         self.web_search_engine = web_search_engine
+        
         # Инициализируем все обработчики
         self.handlers = [
-            MessageHandler(self),
-            StartHandler(self),
-            # CommandHandlers(self),
-            # CallbackHandlers(self)
+            # 1. Custom MessageHandler
+            BotMessageHandler(self), 
+            
+            # 2. CommandHandler: Передается как готовый объект (без скобок)
+            start_handler, 
         ]
         self._setup_handlers()
     
     def _setup_handlers(self):
+        """Регистрирует обработчики в приложении Telegram."""
         for handler in self.handlers:
-            handler.register_handlers(self.application)
-
-    def process_user_message(self, update, context):
-        user_id = str(update.effective_user.id)
-        user_message = update.message.text
-        prompt = get_prompt(user_message, self.web_search_engine)
-        ans = self.llm.generate(messages=prompt)
-
-        return ans
-
-
-if __name__ == "__main__":
-    # application = get_application()
-    # start_handler = CommandHandler('start', start)
-
-    # caps_handler = CommandHandler('caps', caps)
-    # caps_handler = CommandHandler('code', code)
-    # echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
+            if hasattr(handler, 'register_handlers'):
+                # Для кастомных обработчиков (BotMessageHandler)
+                handler.register_handlers(self.application)
+            else:
+                # Для стандартных объектов Telegram Handler (CommandHandler, MessageHandler)
+                self.application.add_handler(handler) 
     
-    # application.add_handler(start_handler)
-    # application.add_handler(echo_handler)
-    # application.add_handler(caps_handler) 
-    #     
-    # application.run_polling()
-    pass
+    # 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлен 'async'
+    async def process_user_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
+        """Основная логика RAG. Вызывается из MessageHandler."""
+        user_message = update.message.text
+        
+        logger.info(f"Запуск RAG для запроса: {user_message[:50]}...")
+        
+        # 1. RETRIEVAL/CONTEXT
+        try:
+            # Предполагаем, что get_prompt синхронный, но может вызывать Tavily, который должен быть awaitable
+            # Вам нужно будет проверить, требует ли get_prompt await
+            prompt = get_prompt(user_message, self.web_search_engine)
+        except Exception as e:
+            logger.error(f"Ошибка при получении контекста (Tavily): {e}")
+            return "Une erreur est survenue lors de la recherche d'informations. Veuillez vérifier les logs."
+
+        # 2. GENERATION
+        if self.llm:
+            # 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлен 'await' перед вызовом асинхронного метода
+            ans = await self.llm.generate(messages=prompt) 
+        else:
+            ans = "Erreur : LLM n'est pas initialisé."
+            
+        return ans

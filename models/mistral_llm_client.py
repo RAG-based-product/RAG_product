@@ -19,7 +19,7 @@ class MistralLLMClient:
         if not self.API_KEY:
             raise ValueError("MISTRAL_API_KEY (ou 'mistral') non trouvée dans les variables d'environnement!")
         else:
-            print("✅ MISTRAL_API_KEY chargée avec succès!")
+            print("MISTRAL_API_KEY chargée avec succès!")
     
     async def generate(self, messages: List[Dict[str, Any]], model: str = "mistral-small-latest", temperature: float = 0.7) -> str:
         """

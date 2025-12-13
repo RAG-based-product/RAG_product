@@ -48,8 +48,8 @@ class StackOverflowAnswersAPI:
             print(f"Ошибка при запросе к Stack Overflow API: {e}")
             return []
         except Exception as e:
-             print(f"Непредвиденная ошибка: {e}")
-             return []
+            print(f"Непредвиденная ошибка: {e}")
+            return []
 
 
 # =========================================================================

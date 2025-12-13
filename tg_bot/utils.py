@@ -5,7 +5,7 @@ from telegram.ext import ApplicationBuilder
 
 def get_application():
     load_dotenv(".env")
-    TOKEN = os.environ.get("TELEGRAM_TOKEN")
+    TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
     
     application = ApplicationBuilder().token(TOKEN).build()
 
