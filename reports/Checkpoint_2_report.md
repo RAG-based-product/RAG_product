@@ -55,8 +55,8 @@
   * 11. Ответ возвращается через Бэкэнд к Пользователю в Tg/Chatbot.
 
 ### Набор данных для тестирования RAG-системы
-- [валидационный датасет](/content/train.csv)
+- [валидационный датасет](https://github.com/RAG-based-product/RAG_product/blob/8d647dfef3ad65a1646600cd00ad953e66d171df/tests/datasets/user_queries.csv)
 
-### 5. метрики качества
-  * Метрики Генерации (Rouge, BertScore, LLM-as-a-Judge).
-  * Метрики RAG (Precision, Recall, Mean Reciprocal Rank).
+### Метрики качества
+  * Метрики для оценки Генерации (Rouge, BertScore, LLM-as-a-Judge).
+  * Метрики для оценки RAG (Precision, Recall, Mean Reciprocal Rank).

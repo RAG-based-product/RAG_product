@@ -6,8 +6,8 @@ import logging
 from telegram.ext import CommandHandler, filters, MessageHandler
 
 # from handlers.handlers import echo, start
-from tg_bot.handlers.message_handlers import MessageHandlers
-from tg_bot.handlers.start_handler import StartHandler
+from tg_bot.handlers.message_handlers import MessageHandler
+from tg_bot.handlers.start_handler import start_handler
 from models.base_llm_client import BaseLLMClient
 from web_search.base_web_search_engine import BaseWebSearchEngine
 from models.prompts import get_prompt
@@ -27,7 +27,7 @@ class MultiAgentBot:
         self.web_search_engine = web_search_engine
         # Инициализируем все обработчики
         self.handlers = [
-            MessageHandlers(self),
+            MessageHandler(self),
             StartHandler(self),
             # CommandHandlers(self),
             # CallbackHandlers(self)
