@@ -201,11 +201,11 @@ def test_get_questions_with_answers():
     print(results)
 
     for qa in results:
-        print(f"🎯 Вопрос: {qa['question_title']}")
-        print(f"   📝 Тело: {qa['question_body']}")
-        print(f"   👍 Score: {qa['question_score']}")
-        print(f"   ⭐ Ответ: {qa['best_answer']['score']} (accepted={qa['best_answer']['is_accepted']})")
-        print(f"   🔗 {qa['url']}")
+        print(f"Вопрос: {qa['question_title']}")
+        print(f"Тело: {qa['question_body']}")
+        print(f" Score: {qa['question_score']}")
+        print(f" Ответ: {qa['best_answer']['score']} (accepted={qa['best_answer']['is_accepted']})")
+        print(f"  {qa['url']}")
         print()
 
 
