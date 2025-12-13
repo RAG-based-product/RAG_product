@@ -30,10 +30,9 @@ class StackOverflowAnswersAPI:
         
         if tags:
             params['tagged'] = ';'.join(tags)
-            
+
         if self.api_key:
             params['key'] = self.api_key
-            
         response = self.session.get(url, params=params)
         
         if response.status_code != 200:
