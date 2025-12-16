@@ -1,17 +1,13 @@
-# RAG_product/tg_bot/bot_core.py
-
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import logging
-from telegram.ext import CommandHandler, filters, MessageHandler as TgMessageHandler
+from telegram.ext import CommandHandler
 from telegram.ext import ContextTypes, Application
-from telegram import Update
-
-# Импорты ваших модулей
+from telegram import Update 
 from tg_bot.handlers.message_handlers import MessageHandler as BotMessageHandler
 from tg_bot.handlers.start_handler import start_handler 
 from models.base_llm_client import BaseLLMClient
 from web_search.base_web_search_engine import BaseWebSearchEngine
-from models.prompts import get_prompt
+from models.prompts import get_prompt, Source # 🚨 Импорт get_prompt и Source
 from tg_bot.utils import get_application
 
 logger = logging.getLogger(__name__)
@@ -23,47 +19,46 @@ class MultiAgentBot:
         self.llm = llm
         self.web_search_engine = web_search_engine
         
-        # Инициализируем все обработчики
+        # Инициализация обработчиков (Handlers)
         self.handlers = [
-            # 1. Custom MessageHandler
-            BotMessageHandler(self), 
-            
-            # 2. CommandHandler: Передается как готовый объект (без скобок)
-            start_handler, 
+            BotMessageHandler(self), # Управляет текстовыми сообщениями и вызывает process_user_message
+            start_handler,           # Управляет командой /start (объект CommandHandler)
         ]
         self._setup_handlers()
     
     def _setup_handlers(self):
         """Регистрирует обработчики в приложении Telegram."""
         for handler in self.handlers:
+            # Если это кастомный обработчик с register_handlers()
             if hasattr(handler, 'register_handlers'):
-                # Для кастомных обработчиков (BotMessageHandler)
                 handler.register_handlers(self.application)
+            # Если это стандартный объект (напр., CommandHandler)
             else:
-                # Для стандартных объектов Telegram Handler (CommandHandler, MessageHandler)
                 self.application.add_handler(handler) 
     
-    # 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлен 'async'
-    async def process_user_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-        """Основная логика RAG. Вызывается из MessageHandler."""
+    # Асинхронный метод, который возвращает ответ и источники
+    async def process_user_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> Tuple[str, List[Source]]:
+        """Реализует пайплайн RAG (Retrieval-Augmented Generation)."""
         user_message = update.message.text
         
-        logger.info(f"Запуск RAG для запроса: {user_message[:50]}...")
-        
-        # 1. RETRIEVAL/CONTEXT
+        # 1. RETRIEVAL/КОНТЕКСТ
         try:
-            # Предполагаем, что get_prompt синхронный, но может вызывать Tavily, который должен быть awaitable
-            # Вам нужно будет проверить, требует ли get_prompt await
-            prompt = get_prompt(user_message, self.web_search_engine)
+            # Получение промпта И списка источников
+            final_prompt, sources = get_prompt(user_message, self.web_search_engine) 
         except Exception as e:
-            logger.error(f"Ошибка при получении контекста (Tavily): {e}")
-            return "Une erreur est survenue lors de la recherche d'informations. Veuillez vérifier les logs."
+            logger.error(f"Ошибка при получении промпта: {e}")
+            # Возврат ошибки и пустого списка источников
+            return "Произошла ошибка при подготовке запроса (проверьте Tavily).", []
 
         # 2. GENERATION
+        ans = "Ошибка: Модель LLM не инициализирована."
         if self.llm:
-            # 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлен 'await' перед вызовом асинхронного метода
-            ans = await self.llm.generate(messages=prompt) 
-        else:
-            ans = "Erreur : LLM n'est pas initialisé."
-            
-        return ans
+            try:
+                # Асинхронный вызов модели LLM
+                ans = await self.llm.generate(messages=final_prompt) 
+            except Exception as e:
+                logger.error(f"Ошибка при генерации LLM: {e}")
+                ans = "Модель LLM не смогла сгенерировать ответ."
+        
+        # 3. ВЫВОД: Возврат ответа LLM и источников
+        return ans, sources

@@ -1,20 +1,14 @@
 import os
 import sys
 from dotenv import load_dotenv
-
-# Добавляем корневую директорию проекта в sys.path для корректного импорта
-# Это гарантирует, что Python найдет модули типа tg_bot.bot_core
-sys.path.append(os.path.dirname(os.path.abspath(__file__))) 
-
-# Импорты ваших компонентов
 from tg_bot.bot_core import MultiAgentBot
 from models.mistral_llm_client import MistralLLMClient
 from web_search.tavily_web_search import TavilyWebSearchEngine
-# from models.prompts import get_prompt # Закомментировано, так как не используется в main()
 
-# =========================================================================
-# 1. ОСНОВНАЯ ФУНКЦИЯ ПРИЛОЖЕНИЯ
-# =========================================================================
+# from models.prompts import get_prompt # Закомментировано, так как не используется в main()
+# Добавляем корневую директорию проекта в sys.path для корректного импорта
+# Это гарантирует, что Python найдет модули типа tg_bot.bot_core
+sys.path.append(os.path.dirname(os.path.abspath(__file__))) 
 
 def main():
     """
@@ -22,9 +16,7 @@ def main():
     загружает переменные окружения, инициализирует LLM и инструменты, 
     и запускает Telegram Bot.
     """
-    
-    # 🚨 КРИТИЧЕСКИ ВАЖНО: Загрузить переменные окружения из .env 
-    # (Это решает все ошибки типа ValueError: ... not found)
+    # Загрузка переменных окружения из .env файла
     load_dotenv() 
 
     # Проверка, что LLM API ключ загружен
@@ -51,8 +43,8 @@ def main():
         # MultiAgentBot инициализирует Telegram Bot Application и добавляет обработчики
         bot = MultiAgentBot(llm, web_search_engine)
         
-        print("✅ Мультиагентный бот успешно инициализирован.")
-        print("🌐 Бот запускается и готов принимать команды...")
+        print("Мультиагентный бот успешно инициализирован.")
+        print("Бот запускается и готов принимать команды...")
         
         # Бот блокирует выполнение и ждет входящих сообщений
         bot.application.run_polling() 
@@ -62,10 +54,6 @@ def main():
         # Выводит более подробную информацию об ошибке
         # import traceback
         # traceback.print_exc()
-
-# =========================================================================
-# 2. ЗАПУСК
-# =========================================================================
 
 if __name__ == "__main__":
     main()
