@@ -2,6 +2,7 @@ from typing import Dict, List, Any, Optional
 import requests
 import re
 from html import unescape
+from rag.redis_cache import RedisCache
 
 
 class StackOverflowAnswersAPI:
@@ -9,6 +10,12 @@ class StackOverflowAnswersAPI:
         self.base_url = "https://api.stackexchange.com/2.3"
         self.api_key = api_key
         self.session = requests.Session()
+        
+        self.cache = RedisCache(
+            host="redis",  # "localhost" hors docker
+            prefix="so_answers",
+            ttl=6 * 3600  
+        )
 
     # ----------------------------------------------------------------------
     def get_questions_with_answers(
@@ -21,6 +28,22 @@ class StackOverflowAnswersAPI:
         n_results: int = 10,
         additional_question_ids: Optional[List[int]] = None
     ) -> List[Dict[str, Any]]:
+        
+        
+        cache_payload = {
+            "query": query,
+            "tags": tags,
+            "min_score": min_score,
+            "only_accepted": only_accepted,
+            "has_accepted_answer": has_accepted_answer,
+            "n_results": n_results,
+            "additional_question_ids": additional_question_ids
+        }
+
+        cached = self.cache.get(cache_payload)
+        if cached:
+            print("Redis cache HIT (StackOverflow)")
+            return cached
 
         url = f"{self.base_url}/search/advanced"
 
@@ -70,7 +93,11 @@ class StackOverflowAnswersAPI:
 
             filtered_questions.extend(extra_questions)
 
-        return self._enrich_with_best_answers(filtered_questions, only_accepted)
+        # return self._enrich_with_best_answers(filtered_questions, only_accepted)
+    
+        result = self._enrich_with_best_answers(filtered_questions, only_accepted)
+        self.cache.set(cache_payload, result)
+        return result
 
     # ----------------------------------------------------------------------
     def _get_questions_by_ids(self, additional_question_ids: List[int]) -> List[Dict[str, Any]]:
