@@ -17,7 +17,6 @@ class BaseAgent(ABC):
         """Основной метод обработки сообщения"""
         pass
     
-    async def _call_llm(self, messages: List[Dict]) -> str:
+    async def _call_llm(self, prompt: str) -> str:
         """Вызов LLM с системным промптом"""
-        full_messages = [{"role": "system", "content": self.system_prompt}] + messages
-        return await self.llm_client.generate(full_messages)
+        return await self.llm_client.generate(prompt)

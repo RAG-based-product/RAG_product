@@ -43,9 +43,9 @@ async def startup_event():
     system_prompt = "Вы — экспертный ассистент RAG. Отвечайте на вопросы на основе предоставленного контекста."
     rag_service = AgentBot(
         name="rag_agent",
-        llm_client=llm,  # Используем llm_client, как в BaseAgent
+        llm_client=llm,
         system_prompt=system_prompt,
-        web_search_engine=web_search_engine  # Передаем в конструктор
+        web_search_engine=web_search_engine
     )
     
     logger.info("RAG Service успешно инициализирован")
@@ -72,7 +72,7 @@ async def generate_response(req: UserRequest) -> AnswerResponse:
         raise HTTPException(status_code=503, detail="RAG Service не инициализирован")
     
     try:
-        # Вызываем RAG-сервис с правильной сигнатурой
+        # Вызываем RAG-сервис
         result = await rag_service.process(req.prompt)
         
         # Извлекаем ответ и источники из словаря

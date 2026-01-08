@@ -1,5 +1,7 @@
 from web_search.base_web_search_engine import BaseWebSearchEngine
 from tavily import TavilyClient
+import re
+from typing import Optional, Set
 import os
 from dotenv import load_dotenv
 import logging
@@ -66,3 +68,27 @@ class TavilyWebSearchEngine(BaseWebSearchEngine):
         except Exception as e:
             logger.error(f"Ошибка при парсинге результатов через Tavily API: {str(e)}")
             return raw_results
+
+    def _extract_question_id_from_url(self, url: str) -> Optional[int]:
+        """
+        Извлекает ID вопроса из URL StackOverflow.
+        Пример: https://stackoverflow.com/questions/12345/... -> 12345
+        """
+        try:
+            match = re.search(r'/questions/(\d+)/', url)
+            if match:
+                return int(match.group(1))
+        except Exception as e:
+            logger.warning(f"Ошибка при извлечении ID из URL {url}: {e}")
+        return None
+
+    def get_ids(self, web_search_results):
+        # Извлекаем ID вопросов из URL
+        web_search_question_ids: Set[int] = set()
+
+        for result in web_search_results:
+            question_id = self._extract_question_id_from_url(result.get('url', ''))
+            if question_id:
+                web_search_question_ids.add(question_id)
+
+        return web_search_question_ids

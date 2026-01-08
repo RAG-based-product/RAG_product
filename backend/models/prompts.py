@@ -13,52 +13,57 @@ class Source(BaseModel):
     url: str
     content: str # Содержимое, используемое для промпта LLM
 
-def get_prompt(user_query: str, web_search_engine: BaseWebSearchEngine) -> Tuple[str, List[Source]]:
+class NeedWebSearchResponse(BaseModel):
+    need_web_search: bool
+    comment: str
+
+def need_web_search_prompt(user_query: str) -> str:
+    """
+    Формирует промпт для проверки необходимости поиска в интернете.
+    """
+    prompt = f"""
+    Вы — экспертный ассистент RAG. 
+    Определите, содержит ли текст пользователя технический вопрос, на который нужно ответить.
+    Если нужно, то в поле комментаия укажите ключевые слова, ключевые слова, по которым можно сохранить результаты поиска в кэш веб-поиска.
+    Если не нужно, то в поле комментаия приведите вежливый ответ пользователю.
+    Верните только JSON со следующими полями:
+    - need_web_search: bool - нужно ли искать информацию в интернете
+    - comment: str - только ключевые слова, по которым можно сохранить результаты поиска в кэш веб-поиска, или вежливый ответ пользователю.
+    ВАЖНО: Верните ТОЛЬКО валидный JSON без markdown разметки, без обратных кавычек, без дополнительного текста.
+    Примеры:
+    user_query_example_1: 'I have a function template f, defining in its body a local class A with another nested class B. 
+    Both classes are not templates. 
+    Must I name the inner class as typename A::B or shorter variant A::B is ok as well?'
+    answer_example_1:
+        "need_web_search": true
+        "comment": 'local nested classes in function templates need typename for naming'
+    user_query_example_2: 'Привет, что ты умеешь?'
+    answer_example_2:
+        "need_web_search": false
+        "comment": "Привет! Я могу помочь вам с вашими техническими вопросами найти решение с помощью моих знаний и информации из StackOverflow. Что вы хотите узнать?"
+    user_query: '{user_query}'
+    answer_json:
+    """
+    return prompt
+
+def get_prompt(user_query: str, sources_list: List[Source]) -> str:
     """
     Выполняет поиск в Интернете, форматирует результаты в контекст 
     и возвращает финальный промпт для LLM вместе со списком источников.
     """
     
     # Извлечение: Получаем результаты поиска
-    try:
-        search_results_raw = web_search_engine.search(user_query)
-        
-    except Exception as e:
-        logger.error(f"Ошибка при веб-поиске (Tavily): {e}")
-        # Возвращаем промпт с ошибкой и пустые источники
-        error_prompt = f"""
-        Вы — помощник RAG. При поиске информации произошла ошибка. 
-        Пожалуйста, сообщите пользователю, что поиск не удался.
-        ОШИБКА: {e}
-        ВОПРОС ПОЛЬЗОВАТЕЛЯ: {user_query}
-        """
-        return error_prompt, []
-
-
-    context_text = ""
-    sources_list: List[Source] = []
     
-    # Обработка и форматирование результатов (Предполагается, что search() вернул список словарей)
-    for i, result in enumerate(search_results_raw):
-        # Преобразование словаря в модель Source
-        source = Source(
-            title=result.get('title', 'Без заголовка'),
-            url=result.get('url', '#'),
-            content=result.get('content', 'Содержимое недоступно')
-        )
-        
-        # Добавляем содержимое в контекст для LLM
-        context_text += f"Документ {i+1}:\nЗаголовок: {source.title}\nСодержимое: {source.content}\n\n"
-        
-        # Сохраняем источник для вывода пользователю
-        sources_list.append(source)
-
+    context_text = f"Документы, найденные в процессе поиска:\n"
+    for i, source in enumerate(sources_list):
+        context_text += f"{i+1}. {source.title}\n{source.content}\n\n"
+    
     # Создание финального промпта
     final_prompt = f"""
     Вы — экспертный ассистент RAG. Используйте СТРОГО только информацию, 
     представленную в секции "КОНТЕКСТ", для ответа на вопрос пользователя на русском языке. 
     Ваш ответ должен быть точным и лаконичным.
-
+    В конце ответа укажите краткое описание по каждому источнику из контекста.
     ---
     КОНТЕКСТ:
     {context_text}
@@ -70,4 +75,4 @@ def get_prompt(user_query: str, web_search_engine: BaseWebSearchEngine) -> Tuple
     ОТВЕТ:
     """
     
-    return final_prompt, sources_list
+    return final_prompt
