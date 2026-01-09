@@ -117,7 +117,7 @@ class AgentBot(BaseAgent):
                 if not self.web_search_engine:
                     logger.warning("WebSearchEngine не инициализирован, пропускаем веб-поиск")
                 else:
-                    web_search_results = self.web_search_engine.search(user_query, top_k=5)
+                    web_search_results = self.web_search_engine.search(web_search_comment, top_k=5)
                     
                     web_search_question_ids = self.web_search_engine.get_ids(web_search_results)
                     
@@ -140,7 +140,7 @@ class AgentBot(BaseAgent):
         logger.info("Шаг 3: Поиск похожих вопросов на StackOverflow через API...")
         try:
             so_search_results = self.so_api.get_questions_with_answers(
-                query=user_query,
+                query=web_search_comment,
                 min_score=1,
                 only_accepted=True,
                 has_accepted_answer=True,
@@ -167,7 +167,7 @@ class AgentBot(BaseAgent):
             # Используем метод get_questions_with_answers с additional_question_ids
             # для получения данных по всем вопросам, включая те, что были найдены через веб-поиск
             final_so_results = self.so_api.get_questions_with_answers(
-                query=user_query,
+                query=web_search_comment,
                 min_score=1,
                 only_accepted=True,
                 has_accepted_answer=True,
@@ -176,7 +176,7 @@ class AgentBot(BaseAgent):
             )
             
             # Формируем источники из результатов StackOverflow
-            for qa in final_so_results:
+            for qa in final_so_results[:5]: # ограничимся первыми 5 результатами
                 try:
                     source = Source(
                         title=qa.get('question_title', 'Без заголовка'),
