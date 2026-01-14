@@ -69,9 +69,6 @@ class StackOverflowAnswersAPI:
             logger.error(f"Непредвиденная ошибка при обработке JSON: {e}")
             return []
 
-# =========================================================================
-# 2. ФУНКЦИЯ ДЛЯ ТЕСТИРОВАНИЯ (CALCULATING HIT RATE)
-# =========================================================================
 
 def evaluate_retrieval_hit_rate(
     file_path: str, 
@@ -129,10 +126,6 @@ def evaluate_retrieval_hit_rate(
     return hit_rate
 
 
-# =========================================================================
-# 3. ЗАПУСК ТЕСТИРОВАНИЯ
-# =========================================================================
-
 if __name__ == "__main__":
     load_dotenv()
     STACK_API_KEY = os.environ.get("STACK_API_KEY") 
@@ -148,10 +141,10 @@ if __name__ == "__main__":
     if not os.path.exists(USER_QUERIES_PATH):
         logger.error(f"Файл датасета не найден по указанному пути: {USER_QUERIES_PATH}")
     else:
-        # 1. Инициализация API клиента
+        # Инициализация API клиента
         so_client = StackOverflowAnswersAPI(api_key=STACK_API_KEY)
         
-        # 2. Запуск оценки
+        # Запуск оценки
         final_hit_rate = evaluate_retrieval_hit_rate(
             file_path=USER_QUERIES_PATH, 
             api_client=so_client, 

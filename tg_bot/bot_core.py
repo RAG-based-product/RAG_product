@@ -41,7 +41,7 @@ class MultiAgentBot:
         """Реализует пайплайн RAG (Retrieval-Augmented Generation)."""
         user_message = update.message.text
         
-        # 1. RETRIEVAL/КОНТЕКСТ
+        # RETRIEVAL/КОНТЕКСТ
         try:
             # Получение промпта И списка источников
             final_prompt, sources = get_prompt(user_message, self.web_search_engine) 
@@ -50,7 +50,7 @@ class MultiAgentBot:
             # Возврат ошибки и пустого списка источников
             return "Произошла ошибка при подготовке запроса (проверьте Tavily).", []
 
-        # 2. GENERATION
+        # GENERATION
         ans = "Ошибка: Модель LLM не инициализирована."
         if self.llm:
             try:
@@ -60,5 +60,5 @@ class MultiAgentBot:
                 logger.error(f"Ошибка при генерации LLM: {e}")
                 ans = "Модель LLM не смогла сгенерировать ответ."
         
-        # 3. ВЫВОД: Возврат ответа LLM и источников
+        # ЫВОД: Возврат ответа LLM и источников
         return ans, sources
