@@ -17,7 +17,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         "Например, введите: `Что такое механизм ** в Python?`",
     )
 
-# --- Конфигурация Обработчиков ---
 
 # Объект CommandHandler, который связывает команду /start с функцией start_command
 start_handler = CommandHandler("start", start_command)

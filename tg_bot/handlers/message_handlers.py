@@ -1,4 +1,3 @@
-# tg_bot/handlers/message_handlers.py
 from typing import List
 from telegram.ext import MessageHandler as TgMessageHandler, filters
 from telegram.ext import ContextTypes
