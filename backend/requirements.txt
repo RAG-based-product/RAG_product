@@ -4,7 +4,6 @@ langchain==0.3.27
 langchain-mistralai==0.2.12 
 python-dotenv==1.1.1 
 langgraph==0.2.19
-python-telegram-bot==22.5
 tavily-python==0.7.14
 fastapi>=0.115.0
 uvicorn>=0.30.0

@@ -21,3 +21,4 @@ class BaseWebSearchEngine:
         :return: массив структурированных документов
         """
         raise NotImplementedError("Метод parse_results должен быть реализован в наследнике")
+

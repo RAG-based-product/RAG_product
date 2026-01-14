@@ -49,3 +49,24 @@ Reranker --> ContextBuilder
 ContextBuilder --> LLM
 LLM --> ChatbotUI
 
+┌─────────────────────────────────────┐
+│  main.py (Telegram Bot)             │
+│  - Проверяет TELEGRAM_BOT_TOKEN      │
+│  - Создает TelegramBot(api_url)      │
+└──────────────┬──────────────────────┘
+               │ HTTP запросы
+               ▼
+┌─────────────────────────────────────┐
+│  backend/backend_core.py (FastAPI)    │
+│  - Проверяет MISTRAL_API_KEY         │
+│  - Создает MistralLLMClient()        │
+│  - Создает TavilyWebSearchEngine()   │
+│  - Создает AgentBot(deps...)         │
+└──────────────┬──────────────────────┘
+               │ использует
+               ▼
+┌─────────────────────────────────────┐
+│  agents/agent_bot_core.py           │
+│  - Только бизнес-логика             │
+│  - Не создает зависимости           │
+└─────────────────────────────────────┘
