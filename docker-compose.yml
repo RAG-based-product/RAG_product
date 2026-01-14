@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:8-alpine
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    command: redis-server --bind 0.0.0.0
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  fastapi:
+    build:
+      context: ./backend
+      # dockerfile: backend/Dockerfile
+    container_name: fastapi-service
+    command: uvicorn backend_core:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/workspace
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/workspace
+    working_dir: /workspace
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  telegram_bot:
+    build:
+      context: ./tg_bot
+      # dockerfile: tg_bot/Dockerfile
+    container_name: telegram-bot
+    command: python3 main.py
+    environment:
+      - PYTHONPATH=/workspace
+      - FASTAPI_HOST=http://fastapi
+      - FASTAPI_PORT=8000
+    env_file:
+      - .env
+    volumes:
+      - ./tg_bot:/workspace
+    working_dir: /workspace
+    depends_on:
+      fastapi:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:

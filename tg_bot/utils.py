@@ -1,4 +1,3 @@
-from langchain_mistralai import ChatMistralAI
 from dotenv import load_dotenv
 import os
 from telegram.ext import ApplicationBuilder

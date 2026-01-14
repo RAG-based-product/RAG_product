@@ -30,20 +30,20 @@ class StackOverflowAnswersAPI:
     ) -> List[Dict[str, Any]]:
         
         
-        cache_payload = {
-            "query": query,
-            "tags": tags,
-            "min_score": min_score,
-            "only_accepted": only_accepted,
-            "has_accepted_answer": has_accepted_answer,
-            "n_results": n_results,
-            "additional_question_ids": additional_question_ids
-        }
+        # cache_payload = {
+        #     "query": query,
+        #     "tags": tags,
+        #     "min_score": min_score,
+        #     "only_accepted": only_accepted,
+        #     "has_accepted_answer": has_accepted_answer,
+        #     "n_results": n_results,
+        #     "additional_question_ids": additional_question_ids
+        # }
 
-        cached = self.cache.get(cache_payload)
-        if cached:
-            print("Redis cache HIT (StackOverflow)")
-            return cached
+        # cached = self.cache.get(cache_payload)
+        # if cached:
+        #     print("Redis cache HIT (StackOverflow)")
+        #     return cached
 
         url = f"{self.base_url}/search/advanced"
 
@@ -81,7 +81,7 @@ class StackOverflowAnswersAPI:
             q for q in questions if q.get('score', 0) >= min_score
         ]
 
-        print("SO Answers API returns q_ids:", [q['question_id'] for q in filtered_questions])
+        # print("SO Answers API returns q_ids:", [q['question_id'] for q in filtered_questions])
 
         # При необходимости — загрузка дополнительных вопросов по ID
         if additional_question_ids:
@@ -96,7 +96,7 @@ class StackOverflowAnswersAPI:
         # return self._enrich_with_best_answers(filtered_questions, only_accepted)
     
         result = self._enrich_with_best_answers(filtered_questions, only_accepted)
-        self.cache.set(cache_payload, result)
+        # self.cache.set(cache_payload, result)
         return result
 
     # ----------------------------------------------------------------------
@@ -126,6 +126,7 @@ class StackOverflowAnswersAPI:
                 questions.append(question)
             except Exception as e:
                 print(f"Ошибка при парсинге вопроса {qid}: {e}")
+                print(f"data: {data}")
 
         return questions
 
