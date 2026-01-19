@@ -10,9 +10,7 @@ from dotenv import load_dotenv
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
-# =========================================================================
-# 1. StackOverflowAnswersAPI: Полный класс для целей тестирования
-# =========================================================================
+# StackOverflowAnswersAPI: Полный класс для целей тестирования
 
 class StackOverflowAnswersAPI:
     """
@@ -136,7 +134,7 @@ if __name__ == "__main__":
         logger.warning("STACK_API_KEY не найден. Возможен Rate Limit API Stack Exchange.")
 
     # Путь к вашему датасету
-    USER_QUERIES_PATH = r'C:\Users\JOHANN MOULEO\RAG_product\tests\datasets\eng_dataset.csv'
+    USER_QUERIES_PATH = r'C:\Users\JOHANN MOULEO\RAG_product\backend\tests\datasets\eng_dataset.csv'
     
     if not os.path.exists(USER_QUERIES_PATH):
         logger.error(f"Файл датасета не найден по указанному пути: {USER_QUERIES_PATH}")
